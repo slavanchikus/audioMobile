@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import cx from 'classnames';
-
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
 
 import AudioContainer from './AudioContainer/AudioContainer';

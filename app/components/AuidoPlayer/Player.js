@@ -1,12 +1,30 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import Progress from './Progress/Progress';
+import Video from 'react-native-video';
+
+import { View, Text, StyleSheet } from 'react-native';
+
+/* import Progress from './Progress/Progress';
 import Controls from './Controls/Controls';
 import QueueManage from './QueueManage/QueueManage';
-import Volume from './Volume/Volume';
+import Volume from './Volume/Volume'; */
 
-import styles from './Player.module.styl';
+const styles = StyleSheet.create({
+  container: {
+    height: 200,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    marginTop: -1,
+    borderTopWidth: 2,
+    borderColor: 'rgba(163, 162, 162, 0.53)'
+  },
+  info: {
+    flex: 0.6
+  },
+});
 
 export default class Player extends PureComponent {
   static propTypes = {
@@ -19,6 +37,8 @@ export default class Player extends PureComponent {
 
   state = {
     playerQueue: this.props.queue,
+    play: true,
+    duration: 0,
     currentTime: 0,
     volume: 1,
     loop: false,
@@ -26,28 +46,18 @@ export default class Player extends PureComponent {
     loaded: false
   };
 
-  componentDidMount() {
-    this.audio.play();
-    document.title = this.props.audio.title;
-
-    this.audio.addEventListener('timeupdate', this.handleTimeUpdate, false);
-    this.audio.addEventListener('loadstart', this.handleAudioLoading, false);
-    this.audio.addEventListener('loadeddata', this.handleAudioLoaded, false);
-    this.audio.addEventListener('ended', this.handleAudioEnded, false);
-  }
-
   componentWillReceiveProps({ audio, queue, isFetchingAudio }) {
     if (!isFetchingAudio && audio.isPlaying && !this.props.audio.isPlaying) {
-      this.audio.play();
+      this.setState({ play: true });
     } else if (!audio.isPlaying && this.props.audio.isPlaying) {
-      this.audio.pause();
+      this.setState({ play: false });
     }
 
-    if (this.props.audio && audio && this.state.loaded
+    /* if (this.props.audio && audio && this.state.loaded
       && this.props.audio.id !== audio.id) {
       this.audio.pause();
       this.setState({ loaded: false });
-    }
+    } */
 
     if (queue !== this.props.queue) {
       if (this.state.random) {
@@ -57,38 +67,29 @@ export default class Player extends PureComponent {
         this.setState({ playerQueue: queue });
       }
     }
-
-    if (audio !== this.props.audio) {
-      document.title = audio.title;
-    }
   }
 
   handleAudioLoading = () => {
     this.setState({ loaded: false });
   };
 
-  handleAudioLoaded = () => {
+  handleAudioLoad= () => {
     this.setState({ loaded: true });
   };
 
-  handleAudioEnded = () => {
+ /* handleAudioEnded = () => {
     this.handleMoveAudio('next');
-  };
+  }; */
 
-  handleTimeUpdate = () => {
-    this.setState({ currentTime: this.audio.currentTime });
+  handleTimeUpdate = (data) => {
+    this.setState({ currentTime: Math.floor(data.currentTime) });
   };
 
   handleRewindTime = (newTime) => {
     this.audio.currentTime = newTime;
   };
 
-  handleVolume = (val) => {
-    this.setState({ volume: val });
-    this.audio.volume = val;
-  };
-
-  handleLoopAudio = () => {
+  /*handleLoopAudio = () => {
     this.setState({ loop: !this.state.loop });
   };
 
@@ -112,26 +113,43 @@ export default class Player extends PureComponent {
       turnAudio = playerQueue[currAudio + 1];
     }
     if (turnAudio) this.props.pickAudio(turnAudio, null);
-  };
+  };*/
 
   render() {
-    const { currentTime, volume, loop, random, loaded } = this.state;
+    const { duration, currentTime, volume, loop, random, loaded } = this.state;
     const { audio } = this.props;
     return (
-      <div className={styles.container}>
-        <audio
-          ref={node => (this.audio = node)}
-          src={audio.audioUrl}
-          autoPlay={audio.isPlaying}
-          loop={loop}
+      <View className={styles.container}>
+        <Video
+          source={{ uri: 'https://music.xn--41a.ws/media/mp3/0/3778_5b2fcbd741c6b2ca365ce26df06a54d7.mp3' }}
+          paused={!this.state.play}
+          onLoad={this.handleAudioLoad}
+          onProgress={this.handleTimeUpdate}
+          style={styles.audioElement}
         />
-        <Progress
+        <View className={styles.info}>
+          <Text
+            className={styles.info_text}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {audio.artist}
+          </Text>
+          <Text
+            className={styles.info_text}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {audio.title}
+          </Text>
+        </View>
+        {/*<Progress
           loaded={loaded}
           duration={audio.duration}
           currentTime={currentTime}
           onRewindTime={this.handleRewindTime}
-        />
-        <Controls
+        />*/}
+        {/* <Controls
           isPlaying={audio.isPlaying}
           onTogglePlay={this.props.togglePlaying}
           onMoveAudio={this.handleMoveAudio}
@@ -142,21 +160,14 @@ export default class Player extends PureComponent {
           height={60}
           alt="pic"
         />
-        <div className={styles.info}>
-          <div>{audio.artist}</div>
-          <div>{audio.title}</div>
-        </div>
+
         <QueueManage
           loop={loop}
           random={random}
           onLoopAudio={this.handleLoopAudio}
           onRandomAudio={this.handleRandomAudio}
-        />
-        <Volume
-          volume={volume}
-          onPickVolume={this.handleVolume}
-        />
-      </div>
+        /> */}
+      </View>
     );
   }
 }

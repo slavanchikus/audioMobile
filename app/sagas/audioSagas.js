@@ -1,9 +1,9 @@
 import { fork, call, put, takeEvery } from 'redux-saga/effects';
 import { getAudio, listenAudio } from '../api/audioApi';
 
-function* fetchAudio({ value, page }) {
+function* fetchAudio({ value, page, userId, token }) {
   try {
-    const payload = yield call(getAudio, value, page);
+    const payload = yield call(getAudio, value, page, userId, token);
     yield put({ type: 'GET_AUDIO_COMPLETE', payload });
   } catch (error) {
     yield put({ type: 'GET_AUDIO_FAILED' });
@@ -16,10 +16,14 @@ function* watchAudioRequest() {
 }
 
 
-function* fetchListen({ audio }) {
+function* fetchListen({ audio, getStreamUrl }) {
   try {
-    const payload = yield call(listenAudio, audio.listenUrl);
-    yield put({ type: 'PICK_AUDIO_COMPLETE', audio: { ...audio, audioUrl: payload.audioUrl }});
+    if (getStreamUrl) {
+      const payload = yield call(listenAudio, audio.url);
+      yield put({ type: 'PICK_AUDIO_COMPLETE', audio: { ...audio, url: payload.url }});
+    } else {
+      yield put({ type: 'PICK_AUDIO_COMPLETE', audio });
+    }
   } catch (error) {
     yield put({ type: 'PICK_AUDIO_FAILED' });
     throw error;
@@ -31,30 +35,7 @@ function* watchListenRequest() {
 }
 
 
-function* downloadAudio({ audio }) {
-  try {
-    const payload = yield call(listenAudio, audio.listenUrl);
-    const mockA = document.createElement('a');
-    mockA.setAttribute('href', payload.audioUrl);
-    mockA.setAttribute('download', 'download');
-    mockA.setAttribute('target', '_blank');
-    document.body.appendChild(mockA);
-    mockA.click();
-    document.body.removeChild(mockA);
-    yield put({ type: 'DOWNLOAD_AUDIO_COMPLETE' });
-  } catch (error) {
-    yield put({ type: 'DOWNLOAD_AUDIO_FAILED' });
-    throw error;
-  }
-}
-
-function* watchDownloadRequest() {
-  yield takeEvery('DOWNLOAD_AUDIO', downloadAudio);
-}
-
-
 export function* audioSagas() {
   yield fork(watchAudioRequest);
   yield fork(watchListenRequest);
-  yield fork(watchDownloadRequest);
 }
