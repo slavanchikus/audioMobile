@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-import Video from 'react-native-video';
-
 import { View, Text, StyleSheet } from 'react-native';
 
 /* import Progress from './Progress/Progress';
@@ -120,13 +118,6 @@ export default class Player extends PureComponent {
     const { audio } = this.props;
     return (
       <View className={styles.container}>
-        <Video
-          source={{ uri: 'https://music.xn--41a.ws/media/mp3/0/3778_5b2fcbd741c6b2ca365ce26df06a54d7.mp3' }}
-          paused={!this.state.play}
-          onLoad={this.handleAudioLoad}
-          onProgress={this.handleTimeUpdate}
-          style={styles.audioElement}
-        />
         <View className={styles.info}>
           <Text
             className={styles.info_text}
